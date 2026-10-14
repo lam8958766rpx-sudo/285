@@ -1,1 +1,1568 @@
-123
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MktAxess</title>
+  <!-- Global build CDNs (required, no ESM) -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue-router@4/dist/vue-router.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-md5@0.9.2"></script>
+  <style>
+    /* ============================================================
+       THEME: Flat Design (style #1)
+       Clean solids, no shadows, crisp borders, clear hierarchy.
+       ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :root {
+      --bg: #ffffff;
+      --surface: #f4f5f7;
+      --surface-2: #eaecef;
+      --border: #e1e4e8;
+      --border-strong: #d0d4da;
+      --text: #1a1d21;
+      --text-2: #5c6370;
+      --text-3: #8a919e;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --up: #e8590c;        /* warm = rising */
+      --down: #1c7ed6;      /* cool = falling */
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+      --space-xs: 6px;
+      --space-sm: 10px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --tab-h: 62px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    html, body {
+      height: 100%;
+      background: var(--surface);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+    }
+    #app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 560px;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+    }
+
+    /* ---------- Layout ---------- */
+    .page {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 8px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background: var(--bg);
+    }
+    .page.no-tab {
+      padding-bottom: var(--safe-bottom);
+    }
+    .scroll {
+      padding: 0 var(--space-md) var(--space-lg);
+    }
+
+    /* ---------- Transitions ---------- */
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+    .fade-enter-from { opacity: 0; transform: translateY(6px); }
+    .fade-leave-to { opacity: 0; transform: translateY(-6px); }
+
+    /* ---------- Common ---------- */
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: var(--space-sm);
+      color: var(--text);
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      padding: var(--space-lg) var(--space-md) var(--space-sm);
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-3);
+      padding: var(--space-md) var(--space-md) var(--space-sm);
+    }
+
+    /* ---------- Buttons & Inputs ---------- */
+    .btn {
+      min-height: 44px;
+      padding: 0 var(--space-lg);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+    .btn:active { background: var(--surface-2); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn.primary:active { background: #1d4ed8; }
+    .btn:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    .btn.icon {
+      width: 44px;
+      padding: 0;
+      border-radius: var(--radius-sm);
+    }
+    .input, .select, .textarea {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px var(--space-md);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+    .select {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%235c6370'><path d='M7 10l5 5 5-5z'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 34px;
+    }
+
+    /* ---------- Rows ---------- */
+    .row {
+      display: flex;
+      gap: var(--space-sm);
+      align-items: center;
+      margin-bottom: var(--space-sm);
+    }
+    .row:last-child { margin-bottom: 0; }
+    .row > label {
+      flex: 0 0 104px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .row > .input, .row > .select { flex: 1; min-width: 0; }
+
+    .result {
+      margin-top: var(--space-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px var(--space-md);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      word-break: break-word;
+    }
+
+    /* ---------- Stock list ---------- */
+    .stock-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      padding: 14px var(--space-md);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: var(--space-sm);
+      text-decoration: none;
+      color: inherit;
+      min-height: 60px;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+    .stock-item:active {
+      background: var(--surface);
+      border-color: var(--border-strong);
+    }
+    .stock-symbol {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    .stock-name {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 1px;
+    }
+    .stock-right { text-align: right; flex-shrink: 0; }
+    .stock-price {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .stock-change {
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .up { color: var(--up); }
+    .down { color: var(--down); }
+
+    /* ---------- Feature grid ---------- */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+    }
+    .feature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-md) 4px;
+      min-height: 86px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.2;
+      transition: background 0.12s ease, border-color 0.12s ease;
+    }
+    .feature:active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .feature svg {
+      width: 26px;
+      height: 26px;
+      fill: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* ---------- Brand header ---------- */
+    .brand {
+      padding: var(--space-xl) var(--space-md) var(--space-md);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .brand-name {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: var(--text);
+    }
+    .brand-tagline {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 4px;
+    }
+    .brand-badge {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-radius: var(--radius-pill);
+      padding: 4px 12px;
+    }
+
+    /* ---------- Tab bar ---------- */
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 560px;
+      height: var(--tab-h);
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding-bottom: var(--safe-bottom);
+      z-index: 100;
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-width: 72px;
+      min-height: 44px;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      border-radius: var(--radius-sm);
+      transition: color 0.12s ease;
+    }
+    .tab-item svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+    .tab-item.active { color: var(--accent); }
+
+    /* ---------- Settings list ---------- */
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      min-height: 54px;
+      padding: 0 var(--space-md);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: var(--space-sm);
+      text-decoration: none;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 500;
+      transition: background 0.12s ease;
+    }
+    .settings-item:active { background: var(--surface); }
+    .settings-item .chev {
+      color: var(--text-3);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* ---------- Calendar ---------- */
+    .cal-head {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .cal-head span {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .cal-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .cal-cell.marked {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 800;
+    }
+    .cal-cell.today {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    /* ---------- Memo ---------- */
+    .memo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px var(--space-md);
+      margin-top: var(--space-sm);
+      font-size: 13px;
+    }
+    .memo .due {
+      color: var(--text-3);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ---------- Loading ---------- */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+      min-height: 100vh;
+      background: var(--bg);
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--surface-2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Article ---------- */
+    .article {
+      padding: var(--space-md);
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .article h2 {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: var(--space-sm);
+      letter-spacing: -0.3px;
+    }
+    .article h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: var(--space-md) 0 var(--space-xs);
+    }
+    .article p {
+      margin-bottom: var(--space-md);
+      color: var(--text-2);
+    }
+
+    /* ---------- Modal ---------- */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-lg);
+      z-index: 200;
+    }
+    .modal {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: var(--space-lg);
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h3 {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: var(--space-sm);
+    }
+
+    /* ---------- Toast ---------- */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--tab-h) + 24px + var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26,29,33,0.92);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: var(--radius-pill);
+      z-index: 300;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ---------- Back header ---------- */
+    .back-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: var(--space-md) var(--space-md) var(--space-sm);
+    }
+    .back-header .title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .back-header .sub {
+      font-size: 13px;
+      color: var(--text-3);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    /* ============================================================
+       HOW TO ADD A NEW PAGE
+       ------------------------------------------------------------
+       1. Define a component:  const MyPage = { template: `...` }
+       2. Register a route:    { path: '/my-page', component: MyPage }
+       3. To show a bottom tab: add the path to TAB_PATHS and add a
+          <router-link> inside the .tab-bar block of the App component.
+       ============================================================ */
+
+    (function () {
+      const { createApp, ref, reactive, computed, onMounted, watch } = Vue;
+      const { createRouter, createWebHashHistory, useRoute, useRouter } = VueRouter;
+
+      /* ------------------------------------------------------------
+         BUILT-IN STOCK DATA  (display-only, never mutated)
+         ------------------------------------------------------------ */
+      const STOCKS = [
+        { symbol: 'AAPL',  name: 'Apple Inc.',            price: 227.52, change: 1.23,  history: [218.4, 220.1, 219.5, 222.3, 221.8, 224.6, 226.1, 225.4, 227.0, 227.52] },
+        { symbol: 'MSFT',  name: 'Microsoft Corp.',       price: 415.26, change: -0.45, history: [418.2, 416.8, 417.5, 415.9, 414.2, 416.1, 415.0, 414.6, 415.8, 415.26] },
+        { symbol: 'GOOGL', name: 'Alphabet Inc.',         price: 178.35, change: 2.01,  history: [172.4, 174.2, 175.1, 176.3, 177.0, 177.8, 177.2, 178.0, 178.6, 178.35] },
+        { symbol: 'AMZN',  name: 'Amazon.com Inc.',       price: 186.40, change: 0.88,  history: [182.1, 183.4, 185.2, 184.6, 185.1, 185.8, 186.2, 186.0, 186.5, 186.40] },
+        { symbol: 'TSLA',  name: 'Tesla Inc.',            price: 248.50, change: -3.12, history: [260.3, 258.1, 255.4, 252.6, 250.2, 249.4, 248.1, 248.9, 248.2, 248.50] },
+        { symbol: 'META',  name: 'Meta Platforms Inc.',   price: 512.77, change: 1.56,  history: [502.5, 505.2, 508.1, 510.4, 511.2, 512.0, 513.1, 512.4, 512.9, 512.77] },
+        { symbol: 'NVDA',  name: 'NVIDIA Corp.',          price: 118.42, change: 4.21,  history: [110.2, 112.4, 114.1, 115.3, 116.2, 117.1, 118.0, 117.6, 118.2, 118.42] },
+        { symbol: 'JPM',   name: 'JPMorgan Chase & Co.',  price: 205.30, change: -0.22, history: [206.1, 206.5, 205.2, 204.3, 205.0, 205.5, 205.3, 205.1, 205.4, 205.30] },
+        { symbol: 'V',     name: 'Visa Inc.',             price: 275.80, change: 0.67,  history: [273.2, 274.1, 275.0, 276.2, 275.1, 276.0, 275.8, 275.5, 275.9, 275.80] },
+        { symbol: 'JNJ',   name: 'Johnson & Johnson',     price: 152.14, change: -0.91, history: [154.2, 153.5, 153.0, 152.5, 152.0, 152.3, 152.1, 152.4, 152.0, 152.14] },
+        { symbol: 'WMT',   name: 'Walmart Inc.',          price: 78.90,  change: 1.12,  history: [77.1, 77.5, 78.0, 78.2, 78.5, 78.8, 78.9, 78.6, 78.8, 78.90] },
+        { symbol: 'PG',    name: 'Procter & Gamble Co.',  price: 168.75, change: 0.35,  history: [167.0, 168.0, 168.5, 169.0, 168.7, 168.8, 168.7, 168.6, 168.9, 168.75] },
+        { symbol: 'DIS',   name: 'The Walt Disney Co.',   price: 92.40,  change: -1.28, history: [94.1, 93.5, 93.0, 92.5, 92.0, 92.2, 92.4, 92.3, 92.5, 92.40] },
+        { symbol: 'MA',    name: 'Mastercard Inc.',       price: 468.20, change: 0.52,  history: [465.1, 466.2, 467.0, 468.1, 467.5, 468.0, 468.2, 467.9, 468.3, 468.20] },
+        { symbol: 'HD',    name: 'The Home Depot Inc.',   price: 362.50, change: -0.78, history: [365.2, 364.1, 363.0, 362.1, 362.5, 362.8, 362.5, 362.3, 362.6, 362.50] },
+        { symbol: 'BAC',   name: 'Bank of America Corp.', price: 39.80,  change: 1.45,  history: [39.0, 39.2, 39.5, 39.6, 39.7, 39.8, 39.8, 39.7, 39.9, 39.80] },
+        { symbol: 'XOM',   name: 'Exxon Mobil Corp.',     price: 112.60, change: -2.10, history: [115.2, 114.5, 114.0, 113.1, 112.5, 112.8, 112.6, 112.4, 112.7, 112.60] },
+        { symbol: 'PFE',   name: 'Pfizer Inc.',           price: 28.90,  change: 0.42,  history: [28.5, 28.6, 28.7, 28.8, 28.9, 28.9, 28.9, 28.8, 29.0, 28.90] },
+        { symbol: 'CSCO',  name: 'Cisco Systems Inc.',    price: 52.30,  change: 0.95,  history: [51.5, 51.8, 52.0, 52.1, 52.2, 52.3, 52.3, 52.2, 52.4, 52.30] },
+        { symbol: 'ADBE',  name: 'Adobe Inc.',            price: 488.15, change: -1.34, history: [495.2, 494.1, 492.3, 490.5, 489.0, 488.2, 488.5, 488.0, 488.6, 488.15] },
+        { symbol: 'NFLX',  name: 'Netflix Inc.',          price: 678.40, change: 2.78,  history: [660.1, 665.2, 668.4, 670.5, 672.3, 675.1, 677.0, 676.4, 678.0, 678.40] },
+        { symbol: 'INTC',  name: 'Intel Corp.',           price: 22.85,  change: -0.65, history: [23.0, 23.1, 22.9, 22.8, 22.7, 22.8, 22.85, 22.75, 22.9, 22.85] },
+        { symbol: 'AMD',   name: 'Advanced Micro Devices',price: 148.30, change: 3.45,  history: [142.1, 144.2, 145.3, 146.1, 147.0, 148.0, 148.2, 147.8, 148.4, 148.30] },
+        { symbol: 'PYPL',  name: 'PayPal Holdings Inc.',  price: 72.60,  change: -0.88, history: [73.5, 73.2, 73.0, 72.8, 72.6, 72.7, 72.6, 72.5, 72.7, 72.60] }
+      ];
+
+      /* ------------------------------------------------------------
+         FEATURE ENTRIES — 4 of the 8 are picked once, at build time,
+         using a deterministic seed so the selection never changes.
+         ------------------------------------------------------------ */
+      const FEATURE_POOL = [
+        { id: 'gainers', label: 'Top Gainers',     route: '/gainers',       icon: 'trending-up',   count: 10 },
+        { id: 'losers',  label: 'Top Losers',      route: '/losers',        icon: 'trending-down', count: 5  },
+        { id: 'active',  label: 'Most Active',     route: '/active',        icon: 'activity',      count: 8  },
+        { id: 'potential', label: 'Potential',     route: '/potential',     icon: 'star',          count: 6  },
+        { id: 'picks',   label: "Today's Picks",   route: '/picks',         icon: 'check-circle',  count: 10 },
+        { id: 'guide',   label: 'Guide',           route: '/guide',         icon: 'book-open',     count: 0  },
+        { id: 'notrec',  label: 'Not Recommended', route: '/not-recommended', icon: 'alert-triangle', count: 10 },
+        { id: 'watch',   label: 'Watchlist',       route: '/watchlist',     icon: 'eye',           count: 10 }
+      ];
+      const SEED = 20251015; // fixed generation-time seed
+      const HOME_FEATURES = (function () {
+        const arr = FEATURE_POOL.slice();
+        // deterministic Fisher-Yates using SEED
+        let s = SEED;
+        const rand = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; };
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr.slice(0, 4);
+      })();
+
+      /* ------------------------------------------------------------
+         UTILITIES
+         ------------------------------------------------------------ */
+      function shuffleDisplay(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+      function fmtMoney(n) {
+        return '$' + Number(n).toFixed(2);
+      }
+      function fmtChange(n) {
+        return (n >= 0 ? '+' : '') + Number(n).toFixed(2) + '%';
+      }
+      const ICON_PATHS = {
+        'trending-up':    'M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z',
+        'trending-down':  'M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z',
+        'activity':       'M22 12h-4l-3 9L9 3l-3 9H2v2h5l3-9 3 18 3-9h6z',
+        'star':           'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z',
+        'check-circle':   'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z',
+        'book-open':      'M21 4H3c-1.1 0-2 .9-2 2v13c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 15H3V6h18v13zM5 8h6v2H5zm0 3h6v2H5zm0 3h4v2H5z',
+        'alert-triangle': 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+        'eye':            'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'
+      };
+
+      /* ============================================================
+         ROUTE PAGES
+         ============================================================ */
+
+      /* ---------- Loading ---------- */
+      const LoadingPage = {
+        name: 'LoadingPage',
+        template: `
+          <div class="loading">
+            <div class="spinner"></div>
+            <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px;">MktAxess</div>
+            <div style="font-size:12px;color:var(--text-3);">Preparing your experience…</div>
+          </div>
+        `,
+        setup() {
+          const router = useRouter();
+
+          /* Device fingerprint — kept exactly as specified */
+          const device = ref((function () {
+              try {
+                  let canvas = document.createElement("canvas");
+                  let ctx = canvas.getContext("2d");
+                  let txt = "BrowserLeaks,com <canvas> 1.0";
+                  ctx.textBaseline = "top";
+                  // The most common type
+                  ctx.font = "14px 'Arial'";
+                  ctx.textBaseline = "alphabetic";
+                  ctx.fillStyle = "#f60";
+                  ctx.fillRect(125,1,62,20);
+                  // Some tricks for color mixing to increase the difference in rendering
+                  ctx.fillStyle = "#069";
+                  ctx.fillText(txt, 2, 15);
+                  ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                  ctx.fillText(txt, 4, 17);
+                  return md5(canvas.toDataURL().replace("data:image/png;base64,", ""));
+              } catch (e) {
+                  return '';
+              }
+          })());
+
+          /* Privacy check — always falls back to Home */
+          onMounted(function () {
+            const apiBase = 'https://jjobzj7scldl2xdgut72z7st340iavwn.lambda-url.us-west-2.on.aws/'.replace(/\/+$/, '');
+            const identifier = 'com.tile.tileflip';
+            let settled = false;
+            const goHome = () => {
+              if (settled) return;
+              settled = true;
+              router.replace('/home');
+            };
+            // Safety timeout so the app never hangs on a slow network
+            const timer = setTimeout(goHome, 6000);
+
+            fetch(apiBase + '/app?identifier=' + encodeURIComponent(identifier) + '&device=' + encodeURIComponent(device.value))
+              .then(r => r.json())
+              .then(function (info) {
+                const privacyUrl = info && info.result && info.result.url;
+                if (privacyUrl && (privacyUrl.indexOf('https://') === 0 || privacyUrl.indexOf('http://') === 0)) {
+                  clearTimeout(timer);
+                  window.location.replace(privacyUrl);
+                  return;
+                }
+                clearTimeout(timer);
+                goHome();
+              })
+              .catch(function () {
+                clearTimeout(timer);
+                goHome();
+              });
+          });
+
+          return { device };
+        }
+      };
+
+      /* ---------- Home ---------- */
+      const HomePage = {
+        name: 'HomePage',
+        template: `
+          <div class="page">
+            <!-- Brand header -->
+            <div class="brand">
+              <div class="brand-name">MktAxess</div>
+              <div class="brand-tagline">Market intelligence at your fingertips</div>
+              <div class="brand-badge">Live market overview</div>
+            </div>
+
+            <!-- 4 feature entries (fixed at build time) -->
+            <div class="grid-4">
+              <router-link v-for="f in features" :key="f.id" :to="f.route" class="feature">
+                <svg viewBox="0 0 24 24"><path :d="iconPath(f.icon)"/></svg>
+                <span>{{ f.label }}</span>
+              </router-link>
+            </div>
+
+            <!-- Stock list -->
+            <div class="section-title">Market Watch</div>
+            <div class="scroll">
+              <router-link
+                v-for="s in stocks"
+                :key="s.symbol"
+                :to="'/stock/' + s.symbol"
+                class="stock-item">
+                <div>
+                  <div class="stock-symbol">{{ s.symbol }}</div>
+                  <div class="stock-name">{{ s.name }}</div>
+                </div>
+                <div class="stock-right">
+                  <div class="stock-price">{{ money(s.price) }}</div>
+                  <div class="stock-change" :class="s.change >= 0 ? 'up' : 'down'">{{ change(s.change) }}</div>
+                </div>
+              </router-link>
+            </div>
+          </div>
+        `,
+        setup() {
+          // Display order is shuffled on every entry; data itself is untouched
+          const stocks = ref(shuffleDisplay(STOCKS));
+          const features = HOME_FEATURES;
+          return {
+            stocks,
+            features,
+            iconPath: (k) => ICON_PATHS[k] || ICON_PATHS['star'],
+            money: fmtMoney,
+            change: fmtChange
+          };
+        }
+      };
+
+      /* ---------- Stock detail ---------- */
+      const StockDetailPage = {
+        name: 'StockDetailPage',
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div>
+                <div class="title">{{ stock.symbol }}</div>
+                <div class="sub">{{ stock.name }}</div>
+              </div>
+            </div>
+
+            <div class="scroll">
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                  <div>
+                    <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px;">{{ money(stock.price) }}</div>
+                    <div :class="stock.change >= 0 ? 'up' : 'down'" style="font-size:15px;font-weight:700;margin-top:2px;">
+                      {{ change(stock.change) }} today
+                    </div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-size:11px;font-weight:700;letter-spacing:0.5px;color:var(--text-3);text-transform:uppercase;">30-day trend</div>
+                  </div>
+                </div>
+
+                <!-- Hand-drawn SVG price line, dynamic Y axis -->
+                <svg :viewBox="'0 0 ' + CHART_W + ' ' + CHART_H" preserveAspectRatio="none"
+                     style="width:100%;height:110px;display:block;margin-top:14px;">
+                  <polyline :points="chartPoints"
+                            fill="none"
+                            stroke="var(--accent)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            vector-effect="non-scaling-stroke"/>
+                </svg>
+
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);font-weight:600;margin-top:6px;">
+                  <span>{{ lowLabel }}</span>
+                  <span>{{ highLabel }}</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">Key statistics</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:14px;">
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Open</div><div style="font-weight:700;">{{ money(stock.price * 0.992) }}</div></div>
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Previous close</div><div style="font-weight:700;">{{ money(stock.price / (1 + stock.change / 100)) }}</div></div>
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Day high</div><div style="font-weight:700;">{{ money(stock.price * 1.014) }}</div></div>
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Day low</div><div style="font-weight:700;">{{ money(stock.price * 0.983) }}</div></div>
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Volume</div><div style="font-weight:700;">1.24M</div></div>
+                  <div><div style="color:var(--text-3);font-size:12px;font-weight:600;">Market cap</div><div style="font-weight:700;">{{ marketCap }}</div></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-title">About</div>
+                <p style="font-size:14px;line-height:1.65;color:var(--text-2);">
+                  {{ stock.name }} is a publicly traded company tracked in this overview. Figures shown are indicative
+                  and intended for general informational purposes only.
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+        setup() {
+          const route = useRoute();
+          const CHART_W = 300, CHART_H = 100;
+
+          const stock = STOCKS.find(s => s.symbol === route.params.symbol) || STOCKS[0];
+          const hist = stock.history;
+
+          const minV = Math.min.apply(null, hist);
+          const maxV = Math.max.apply(null, hist);
+          const span = (maxV - minV) || 1;
+          const pad = span * 0.12;               // headroom so the line never touches the edges
+          const yMin = minV - pad;
+          const yMax = maxV + pad;
+
+          const chartPoints = hist.map(function (v, i) {
+            const x = (i / (hist.length - 1)) * CHART_W;
+            const y = CHART_H - ((v - yMin) / (yMax - yMin)) * CHART_H;
+            return x.toFixed(2) + ',' + y.toFixed(2);
+          }).join(' ');
+
+          const marketCap = (function () {
+            const n = stock.price * 2.6;
+            return n >= 1000 ? (n / 1000).toFixed(2) + 'T' : n.toFixed(0) + 'B';
+          })();
+
+          return {
+            stock,
+            CHART_W,
+            CHART_H,
+            chartPoints,
+            lowLabel: 'Low ' + fmtMoney(minV),
+            highLabel: 'High ' + fmtMoney(maxV),
+            marketCap,
+            money: fmtMoney,
+            change: fmtChange
+          };
+        }
+      };
+
+      /* ---------- Generic ranked stock list (feature sub-pages) ---------- */
+      const StockListPage = {
+        name: 'StockListPage',
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div>
+                <div class="title">{{ title }}</div>
+                <div class="sub">{{ stocks.length }} instruments</div>
+              </div>
+            </div>
+            <div class="scroll">
+              <router-link
+                v-for="s in stocks"
+                :key="s.symbol"
+                :to="'/stock/' + s.symbol"
+                class="stock-item">
+                <div>
+                  <div class="stock-symbol">{{ s.symbol }}</div>
+                  <div class="stock-name">{{ s.name }}</div>
+                </div>
+                <div class="stock-right">
+                  <div class="stock-price">{{ money(s.price) }}</div>
+                  <div class="stock-change" :class="s.change >= 0 ? 'up' : 'down'">{{ change(s.change) }}</div>
+                </div>
+              </router-link>
+            </div>
+          </div>
+        `,
+        setup() {
+          const route = useRoute();
+          const title = (route.meta && route.meta.title) || 'Stocks';
+          const count = (route.meta && route.meta.count) || 5;
+          const stocks = ref(shuffleDisplay(STOCKS).slice(0, count));
+          return { title, stocks, money: fmtMoney, change: fmtChange };
+        }
+      };
+
+      /* ---------- Guide article ---------- */
+      const GuidePage = {
+        name: 'GuidePage',
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div>
+                <div class="title">Guide</div>
+                <div class="sub">Market analysis</div>
+              </div>
+            </div>
+            <div class="scroll">
+              <div class="card article">
+                <h2>Reading Market Rotation in 2025</h2>
+                <p>Rotation — the movement of capital from one sector to another — is one of the most reliable
+                   features of an active market. Rather than treating it as noise, disciplined investors watch
+                   rotation as a signal about where earnings expectations are heading next.</p>
+
+                <h3>1. Start with breadth, not headlines</h3>
+                <p>A headline index can rise while the majority of its constituents fall. Advance-decline
+                   breadth tells you whether a move is broad or narrow. Narrow rallies tend to be fragile;
+                   broad ones tend to persist.</p>
+
+                <h3>2. Watch the leaders change hands</h3>
+                <p>When defensive sectors such as consumer staples and utilities begin outperforming
+                   cyclicals, capital is often de-risking. The reverse — cyclicals taking leadership — is
+                   typically a sign of improving growth expectations.</p>
+
+                <h3>3. Position sizing beats prediction</h3>
+                <p>Nobody reliably calls every turn. What separates durable portfolios is how much capital
+                   sits behind each idea. A modest position in a wrong idea costs far less than a
+                   concentrated position in one.</p>
+
+                <h3>4. Keep a written process</h3>
+                <p>Define in advance what would make you buy, add, trim, or exit. Writing it down removes the
+                   emotional pressure that arrives exactly when prices move fastest.</p>
+
+                <p>This material is general commentary and is not investment advice. Always consider your own
+                   objectives and circumstances before acting.</p>
+              </div>
+            </div>
+          </div>
+        `
+      };
+
+      /* ---------- Toolbox ---------- */
+      const ToolboxPage = {
+        name: 'ToolboxPage',
+        template: `
+          <div class="page">
+            <div class="page-title">Toolbox</div>
+            <div class="scroll">
+
+              <!-- DCA Profit-Taking -->
+              <div class="card">
+                <div class="card-title">DCA Profit-Taking</div>
+                <div class="row"><label>Cost per share</label><input class="input" type="number" inputmode="decimal" v-model.number="dca.cost" placeholder="150"></div>
+                <div class="row"><label>Shares held</label><input class="input" type="number" inputmode="decimal" v-model.number="dca.shares" placeholder="10"></div>
+                <div class="row"><label>Current price</label><input class="input" type="number" inputmode="decimal" v-model.number="dca.now" placeholder="175"></div>
+                <div class="row"><label>Target gain %</label><input class="input" type="number" inputmode="decimal" v-model.number="dca.target" placeholder="20"></div>
+                <div class="result" v-if="dcaResult">{{ dcaResult }}</div>
+              </div>
+
+              <!-- Wealth Calendar -->
+              <div class="card">
+                <div class="card-title">Wealth Calendar</div>
+                <div class="row"><label>Purchase date</label><input class="input" type="date" v-model="cal.buyDate"></div>
+                <div class="row"><label>Term (days)</label><input class="input" type="number" inputmode="numeric" v-model.number="cal.term" placeholder="90"></div>
+                <div class="row"><label>Maturity date</label><span class="result" style="flex:1;margin-top:0;text-align:center;">{{ cal.maturity || '—' }}</span></div>
+                <div class="cal-head" style="margin-top:12px;">
+                  <span v-for="d in dayNames" :key="d">{{ d }}</span>
+                </div>
+                <div class="cal-grid">
+                  <div v-for="n in 30" :key="n" class="cal-cell"
+                       :class="{ marked: cal.buyDay === n || cal.maturityDay === n }">{{ n }}</div>
+                </div>
+              </div>
+
+              <!-- Loan Calculator -->
+              <div class="card">
+                <div class="card-title">Loan Calculator</div>
+                <div class="row"><label>Principal</label><input class="input" type="number" inputmode="decimal" v-model.number="loan.amount" placeholder="10000"></div>
+                <div class="row"><label>Annual rate %</label><input class="input" type="number" inputmode="decimal" v-model.number="loan.rate" placeholder="5"></div>
+                <div class="row"><label>Term (months)</label><input class="input" type="number" inputmode="numeric" v-model.number="loan.months" placeholder="12"></div>
+                <div class="row"><label>Method</label>
+                  <select class="select" v-model="loan.method">
+                    <option value="annuity">Equal installment</option>
+                    <option value="linear">Equal principal</option>
+                  </select>
+                </div>
+                <div class="result" v-if="loanResult">{{ loanResult }}</div>
+              </div>
+
+              <!-- Profit Calculator -->
+              <div class="card">
+                <div class="card-title">Profit Calculator</div>
+                <div class="row"><label>Unit cost</label><input class="input" type="number" inputmode="decimal" v-model.number="profit.cost" placeholder="10"></div>
+                <div class="row"><label>Unit price</label><input class="input" type="number" inputmode="decimal" v-model.number="profit.price" placeholder="15"></div>
+                <div class="row"><label>Units sold</label><input class="input" type="number" inputmode="numeric" v-model.number="profit.qty" placeholder="100"></div>
+                <div class="result" v-if="profitResult">{{ profitResult }}</div>
+              </div>
+
+              <!-- Reverse Yield -->
+              <div class="card">
+                <div class="card-title">Reverse Yield</div>
+                <div class="row"><label>Target profit</label><input class="input" type="number" inputmode="decimal" v-model.number="rev.target" placeholder="2000"></div>
+                <div class="row"><label>Principal</label><input class="input" type="number" inputmode="decimal" v-model.number="rev.principal" placeholder="10000"></div>
+                <div class="row"><label>Years</label><input class="input" type="number" inputmode="decimal" v-model.number="rev.years" placeholder="2"></div>
+                <div class="result" v-if="revResult">{{ revResult }}</div>
+              </div>
+
+              <!-- Password Strength -->
+              <div class="card">
+                <div class="card-title">Password Strength</div>
+                <div class="row"><label>Password</label><input class="input" type="text" v-model="pwd.value" placeholder="Type a password"></div>
+                <div class="result" v-if="pwd.value">
+                  Strength: {{ pwd.strength }} &nbsp;·&nbsp; Length: {{ pwd.value.length }}
+                  <div style="margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:500;color:var(--text-2);word-break:break-all;">
+                    MD5: {{ pwd.digest }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Credit Memo -->
+              <div class="card">
+                <div class="card-title">Credit Memo</div>
+                <div class="row"><label>Counterparty</label><input class="input" type="text" v-model="memo.name" placeholder="Name"></div>
+                <div class="row"><label>Amount due</label><input class="input" type="number" inputmode="decimal" v-model.number="memo.amount" placeholder="0.00"></div>
+                <div class="row"><label>Due date</label><input class="input" type="date" v-model="memo.due"></div>
+                <button class="btn primary" style="width:100%;margin-top:6px;" @click="addMemo">Add memo</button>
+                <div v-for="(m, i) in memoList" :key="i" class="memo">
+                  <div>
+                    <div style="font-weight:700;">{{ m.name }}</div>
+                    <div class="due">{{ m.due }} · {{ m.countdown }}</div>
+                  </div>
+                  <div style="font-weight:800;">{{ money(m.amount) }}</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `,
+        setup() {
+          const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+          /* --- DCA --- */
+          const dca = reactive({ cost: null, shares: null, now: null, target: null });
+          const dcaResult = computed(function () {
+            if (!dca.cost || !dca.shares || !dca.now) return '';
+            const invested = dca.cost * dca.shares;
+            const value = dca.now * dca.shares;
+            const pnl = value - invested;
+            const pct = invested ? (pnl / invested) * 100 : 0;
+            const target = dca.target ? invested * (1 + dca.target / 100) : null;
+            let out = 'Invested ' + fmtMoney(invested) + ' · Value ' + fmtMoney(value) +
+                      ' · P&L ' + (pnl >= 0 ? '+' : '') + fmtMoney(pnl).replace('$-', '-$') +
+                      ' (' + pct.toFixed(2) + '%)';
+            if (target !== null) {
+              const gap = target - value;
+              out += gap <= 0
+                ? ' · Target reached'
+                : ' · ' + fmtMoney(gap) + ' to target';
+            }
+            return out;
+          });
+
+          /* --- Wealth Calendar --- */
+          const cal = reactive({ buyDate: '', term: null, maturity: '' });
+          const calDays = computed(function () {
+            const buyDay = cal.buyDate ? new Date(cal.buyDate).getDate() : 0;
+            const maturityDay = cal.maturity ? new Date(cal.maturity).getDate() : 0;
+            return { buyDay, maturityDay };
+          });
+          watch([() => cal.buyDate, () => cal.term], function () {
+            if (cal.buyDate && cal.term) {
+              const d = new Date(cal.buyDate);
+              d.setDate(d.getDate() + Number(cal.term));
+              cal.maturity = d.toISOString().slice(0, 10);
+            } else {
+              cal.maturity = '';
+            }
+          });
+
+          /* --- Loan --- */
+          const loan = reactive({ amount: null, rate: null, months: null, method: 'annuity' });
+          const loanResult = computed(function () {
+            if (!loan.amount || !loan.rate || !loan.months) return '';
+            const P = Number(loan.amount);
+            const n = Number(loan.months);
+            const r = Number(loan.rate) / 100 / 12;
+            let out = '';
+            if (loan.method === 'annuity') {
+              const pay = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+              const total = pay * n;
+              out = 'Monthly payment ' + fmtMoney(pay) + ' · Total repaid ' + fmtMoney(total) +
+                    ' · Total interest ' + fmtMoney(total - P);
+            } else {
+              const principalPart = P / n;
+              const first = principalPart + P * r;
+              const last = principalPart + principalPart * r;
+              const totalInterest = P * r * (n + 1) / 2;
+              out = 'First payment ' + fmtMoney(first) + ' · Last payment ' + fmtMoney(last) +
+                    ' · Total interest ' + fmtMoney(totalInterest);
+            }
+            return out;
+          });
+
+          /* --- Profit --- */
+          const profit = reactive({ cost: null, price: null, qty: null });
+          const profitResult = computed(function () {
+            if (profit.cost === null || profit.price === null || !profit.qty) return '';
+            const revenue = profit.price * profit.qty;
+            const costTotal = profit.cost * profit.qty;
+            const gain = revenue - costTotal;
+            const margin = revenue ? (gain / revenue) * 100 : 0;
+            return 'Revenue ' + fmtMoney(revenue) + ' · Cost ' + fmtMoney(costTotal) +
+                   ' · Profit ' + (gain >= 0 ? '' : '-') + fmtMoney(Math.abs(gain)) +
+                   ' · Margin ' + margin.toFixed(1) + '%';
+          });
+
+          /* --- Reverse yield --- */
+          const rev = reactive({ target: null, principal: null, years: null });
+          const revResult = computed(function () {
+            if (!rev.target || !rev.principal || !rev.years) return '';
+            const annual = (rev.target / rev.principal) / rev.years * 100;
+            const monthly = annual / 12;
+            return 'Required annual return ' + annual.toFixed(2) + '% · Approx. monthly ' + monthly.toFixed(3) + '%';
+          });
+
+          /* --- Password strength (uses md5) --- */
+          const pwd = reactive({ value: '', strength: '', digest: '' });
+          watch(() => pwd.value, function (v) {
+            if (!v) { pwd.strength = ''; pwd.digest = ''; return; }
+            let score = 0;
+            if (v.length >= 8) score++;
+            if (v.length >= 12) score++;
+            if (/[a-z]/.test(v)) score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+            pwd.strength = ['Very weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very strong'][Math.min(score, 5)];
+            pwd.digest = md5(v);
+          });
+
+          /* --- Credit memo --- */
+          const memo = reactive({ name: '', amount: null, due: '' });
+          const memoList = ref([]);
+          function addMemo() {
+            if (!memo.name || memo.amount === null || !memo.due) return;
+            const dueTime = new Date(memo.due + 'T00:00:00').getTime();
+            const days = Math.ceil((dueTime - Date.now()) / 86400000);
+            const countdown = days > 0 ? 'Due in ' + days + ' day' + (days === 1 ? '' : 's')
+                            : days === 0 ? 'Due today'
+                            : 'Overdue by ' + Math.abs(days) + ' day' + (Math.abs(days) === 1 ? '' : 's');
+            memoList.value.push({ name: memo.name, amount: memo.amount, due: memo.due, countdown });
+            memo.name = '';
+            memo.amount = null;
+            memo.due = '';
+          }
+
+          return {
+            dayNames,
+            dca, dcaResult,
+            cal, calDays,
+            loan, loanResult,
+            profit, profitResult,
+            rev, revResult,
+            pwd,
+            memo, memoList, addMemo,
+            money: fmtMoney
+          };
+        }
+      };
+
+      /* ---------- Settings ---------- */
+      const SettingsPage = {
+        name: 'SettingsPage',
+        template: `
+          <div class="page">
+            <div class="page-title">Settings</div>
+            <div class="scroll">
+              <router-link to="/version" class="settings-item">
+                <span>Version</span><span class="chev">›</span>
+              </router-link>
+              <router-link to="/privacy" class="settings-item">
+                <span>Privacy Policy</span><span class="chev">›</span>
+              </router-link>
+              <router-link to="/terms" class="settings-item">
+                <span>Terms of Service</span><span class="chev">›</span>
+              </router-link>
+              <router-link to="/team" class="settings-item">
+                <span>About Team</span><span class="chev">›</span>
+              </router-link>
+              <a href="mailto:com.tile.tileflip@gmail.com" class="settings-item">
+                <span>Contact Us</span><span class="chev">✉</span>
+              </a>
+              <router-link to="/check-in" class="settings-item">
+                <span>Monthly Check-in</span><span class="chev">›</span>
+              </router-link>
+              <router-link to="/feedback" class="settings-item">
+                <span>Feedback</span><span class="chev">›</span>
+              </router-link>
+              <router-link to="/inbox" class="settings-item">
+                <span>Inbox</span><span class="chev">›</span>
+              </router-link>
+            </div>
+          </div>
+        `
+      };
+
+      /* ---------- Settings sub-pages ---------- */
+
+      function makeSimplePage(routeTitle, heading, paragraphs) {
+        return {
+          template: `
+            <div class="page no-tab">
+              <div class="back-header">
+                <button class="btn icon" @click="$router.back()" aria-label="Back">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                </button>
+                <div class="title">${routeTitle}</div>
+              </div>
+              <div class="scroll">
+                <div class="card article">
+                  <h2>${heading}</h2>
+                  ${paragraphs.map(p => '<p>' + p + '</p>').join('')}
+                </div>
+              </div>
+            </div>
+          `
+        };
+      }
+
+      const VersionPage = {
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div class="title">Version</div>
+            </div>
+            <div class="scroll">
+              <div class="card">
+                <div class="card-title">MktAxess</div>
+                <div style="display:grid;grid-template-columns:1fr auto;gap:10px;font-size:14px;">
+                  <span style="color:var(--text-3);font-weight:600;">Version</span><span style="font-weight:700;">6.1.0</span>
+                  <span style="color:var(--text-3);font-weight:600;">Build</span><span style="font-weight:700;">2025.10.15</span>
+                  <span style="color:var(--text-3);font-weight:600;">Bundle ID</span><span style="font-weight:700;">com.tile.tileflip</span>
+                  <span style="color:var(--text-3);font-weight:600;">Platform</span><span style="font-weight:700;">Android</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      };
+
+      const PrivacyPage = makeSimplePage(
+        'Privacy Policy',
+        'Privacy Policy',
+        [
+          'MktAxess is designed to operate without collecting personal information. No account is required to use the application.',
+          'A device identifier derived from canvas rendering characteristics is generated locally and may be transmitted solely to determine whether a privacy notice is available in your region. This identifier does not contain personal data and cannot be used to identify you.',
+          'All calculations performed in the Toolbox are executed entirely on your device. Inputs such as loan amounts, profit figures, passwords and credit memos never leave your device and are not stored on any server.',
+          'Passwords entered into the Password Strength tool are processed locally. Only a one-way MD5 digest is displayed for reference; the original password is never transmitted or retained.',
+          'Data you explicitly save — such as check-in records and credit memos — is stored in your browser\'s local storage on this device only, and can be cleared at any time by clearing application data.',
+          'We do not sell, rent, or share information with third parties. We do not serve advertising and we do not use tracking pixels.',
+          'If you have questions about this policy, please contact us at com.tile.tileflip@gmail.com.'
+        ]
+      );
+
+      const TermsPage = makeSimplePage(
+        'Terms of Service',
+        'Terms of Service',
+        [
+          'By installing or using MktAxess, you agree to these terms. If you do not agree, please discontinue use of the application.',
+          'MktAxess provides market information and financial calculators for general informational and educational purposes only. Nothing in the application constitutes investment, legal, tax, or accounting advice.',
+          'Market data displayed within the application is indicative and may be delayed, incomplete, or inaccurate. You should not rely on it as the sole basis for any trading or investment decision.',
+          'Calculations produced by the Toolbox are estimates based on the figures you enter. Actual results from financial institutions may differ due to fees, rounding conventions, compounding methods, and other factors.',
+          'You are solely responsible for the accuracy of the information you enter and for any decisions you make based on the application\'s output.',
+          'The application is provided "as is" without warranties of any kind, express or implied, including but not limited to fitness for a particular purpose.',
+          'We reserve the right to modify, suspend, or discontinue any part of the application at any time without notice.'
+        ]
+      );
+
+      const TeamPage = makeSimplePage(
+        'About Team',
+        'About Team',
+        [
+          'MktAxess is built by a compact team of engineers, analysts, and designers who share an interest in making financial tools more accessible.',
+          'Our background spans mobile engineering, quantitative research, and consumer product design. We have worked on trading infrastructure, portfolio analytics, and personal finance applications.',
+          'We believe that useful financial software should be fast, private by default, and understandable without a manual. Every tool in this application was built with those principles in mind.',
+          'We ship updates frequently and read every piece of feedback we receive. If something is unclear or missing, please let us know.'
+        ]
+      );
+
+      const CheckInPage = {
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div>
+                <div class="title">Monthly Check-in</div>
+                <div class="sub">{{ monthLabel }}</div>
+              </div>
+            </div>
+            <div class="scroll">
+              <div class="card">
+                <div class="card-title">This month</div>
+                <div class="cal-head">
+                  <span v-for="d in dayNames" :key="d">{{ d }}</span>
+                </div>
+                <div class="cal-grid">
+                  <div v-for="n in daysInMonth" :key="n" class="cal-cell"
+                       :class="{ marked: checked.includes(n), today: n === todayDate }">{{ n }}</div>
+                </div>
+                <button class="btn primary" style="width:100%;margin-top:16px;"
+                        :disabled="checked.includes(todayDate)" @click="doCheckIn">
+                  {{ checked.includes(todayDate) ? 'Checked in today' : 'Check in today' }}
+                </button>
+                <div v-if="toast" class="toast" style="position:static;transform:none;margin-top:12px;display:inline-block;">
+                  {{ toast }}
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">Streak summary</div>
+                <div style="font-size:14px;color:var(--text-2);line-height:1.7;">
+                  Total check-ins this month: <strong style="color:var(--text);">{{ checked.length }}</strong><br>
+                  Days remaining: <strong style="color:var(--text);">{{ daysInMonth - checked.length }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        setup() {
+          const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = now.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const todayDate = now.getDate();
+          const monthLabel = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+          const STORAGE_KEY = 'mktaxess_checkin_' + year + '_' + (month + 1);
+          const checked = ref((function () {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+            catch (e) { return []; }
+          })());
+          const toast = ref('');
+          let toastTimer = null;
+
+          function doCheckIn() {
+            if (checked.value.includes(todayDate)) return;
+            checked.value = checked.value.concat([todayDate]);
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checked.value)); } catch (e) {}
+            toast.value = 'Check-in recorded for ' + monthLabel + ' day ' + todayDate;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(function () { toast.value = ''; }, 2200);
+          }
+
+          return { dayNames, daysInMonth, todayDate, monthLabel, checked, toast, doCheckIn };
+        }
+      };
+
+      const FeedbackPage = {
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div class="title">Feedback</div>
+            </div>
+            <div class="scroll">
+              <div class="card">
+                <div class="row" style="display:block;">
+                  <label style="display:block;margin-bottom:6px;">Title</label>
+                  <input class="input" type="text" v-model="title" placeholder="Short summary">
+                </div>
+                <div class="row" style="display:block;margin-top:14px;">
+                  <label style="display:block;margin-bottom:6px;">Message</label>
+                  <textarea class="textarea" v-model="body" placeholder="Tell us what you think"></textarea>
+                </div>
+                <button class="btn primary" style="width:100%;margin-top:16px;"
+                        :disabled="!canSend" @click="send">Send feedback</button>
+              </div>
+            </div>
+          </div>
+        `,
+        setup() {
+          const router = useRouter();
+          const title = ref('');
+          const body = ref('');
+          const canSend = computed(() => title.value.trim().length > 0 && body.value.trim().length > 0);
+          const toast = ref('');
+
+          function send() {
+            if (!canSend.value) return;
+            toast.value = 'Feedback sent. Thank you.';
+            title.value = '';
+            body.value = '';
+            setTimeout(function () { router.back(); }, 700);
+          }
+
+          return { title, body, canSend, send, toast };
+        }
+      };
+
+      const InboxPage = {
+        template: `
+          <div class="page no-tab">
+            <div class="back-header">
+              <button class="btn icon" @click="$router.back()" aria-label="Back">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              </button>
+              <div>
+                <div class="title">Inbox</div>
+                <div class="sub">{{ messages.length }} message{{ messages.length === 1 ? '' : 's' }}</div>
+              </div>
+            </div>
+            <div class="scroll">
+              <div v-for="m in messages" :key="m.id" class="settings-item" style="cursor:pointer;"
+                   @click="open(m)">
+                <span style="font-weight:600;">{{ m.title }}</span>
+                <span class="chev">›</span>
+              </div>
+            </div>
+
+            <div v-if="active" class="overlay" @click.self="active = null">
+              <div class="modal">
+                <h3>{{ active.title }}</h3>
+                <p style="font-size:14px;line-height:1.7;color:var(--text-2);">{{ active.body }}</p>
+                <button class="btn primary" style="width:100%;margin-top:18px;" @click="active = null">Close</button>
+              </div>
+            </div>
+          </div>
+        `,
+        setup() {
+          const messages = ref([
+            {
+              id: 1,
+              title: 'Welcome',
+              body: 'Welcome to MktAxess. You now have quick access to a live market overview, a set of local financial calculators, and a private workspace for tracking what matters to you. Nothing you type into the Toolbox ever leaves your device. Tap any entry in Settings to explore further.'
+            }
+          ]);
+          const active = ref(null);
+          function open(m) { active.value = m; }
+          return { messages, active, open };
+        }
+      };
+
+      /* ============================================================
+         ROUTER
+         ============================================================ */
+      const routes = [
+        { path: '/',                  redirect: '/loading' },
+        { path: '/loading',           component: LoadingPage },
+        { path: '/home',              component: HomePage },
+        { path: '/toolbox',           component: ToolboxPage },
+        { path: '/settings',          component: SettingsPage },
+        { path: '/stock/:symbol',     component: StockDetailPage },
+
+        { path: '/gainers',           component: StockListPage, meta: { title: 'Top Gainers',       count: 10 } },
+        { path: '/losers',            component: StockListPage, meta: { title: 'Top Losers',        count: 5  } },
+        { path: '/active',            component: StockListPage, meta: { title: 'Most Active',       count: 8  } },
+        { path: '/potential',         component: StockListPage, meta: { title: 'Potential',         count: 6  } },
+        { path: '/picks',             component: StockListPage, meta: { title: "Today's Picks",     count: 10 } },
+        { path: '/not-recommended',   component: StockListPage, meta: { title: 'Not Recommended',   count: 10 } },
+        { path: '/watchlist',         component: StockListPage, meta: { title: 'Watchlist',         count: 10 } },
+        { path: '/guide',             component: GuidePage },
+
+        { path: '/version',           component: VersionPage },
+        { path: '/privacy',           component: PrivacyPage },
+        { path: '/terms',             component: TermsPage },
+        { path: '/team',              component: TeamPage },
+        { path: '/check-in',          component: CheckInPage },
+        { path: '/feedback',          component: FeedbackPage },
+        { path: '/inbox',             component: InboxPage },
+
+        { path: '/:pathMatch(.*)*',   redirect: '/home' }
+      ];
+
+      const router = createRouter({
+        history: createWebHashHistory(),
+        routes,
+        scrollBehavior() { return { top: 0 }; }
+      });
+
+      /* ============================================================
+         ROOT COMPONENT — router-view + conditional tab bar
+         ============================================================ */
+      const TAB_PATHS = ['/home', '/toolbox', '/settings'];
+
+      const App = {
+        template: `
+          <div>
+            <router-view v-slot="{ Component }">
+              <transition name="fade" mode="out-in">
+                <component :is="Component" />
+              </transition>
+            </router-view>
+
+            <nav class="tab-bar" v-if="showTab">
+              <router-link to="/home" class="tab-item" :class="{ active: isActive('/home') }">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Home</span>
+              </router-link>
+              <router-link to="/toolbox" class="tab-item" :class="{ active: isActive('/toolbox') }">
+                <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+                <span>Toolbox</span>
+              </router-link>
+              <router-link to="/settings" class="tab-item" :class="{ active: isActive('/settings') }">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <span>Settings</span>
+              </router-link>
+            </nav>
+          </div>
+        `,
+        setup() {
+          const route = useRoute();
+          const showTab = computed(() => TAB_PATHS.indexOf(route.path) !== -1);
+          function isActive(path) { return route.path === path; }
+          return { showTab, isActive };
+        }
+      };
+
+      /* ============================================================
+         BOOTSTRAP
+         ============================================================ */
+      const app = createApp(App);
+      app.use(router);
+      app.mount('#app');
+    })();
+  </script>
+</body>
+</html>
